@@ -1,157 +1,264 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { projects } from './data/projects.js'
+import Icon from './Icon.jsx'
+import PortfolioAssistant from './PortfolioAssistant.jsx'
 import './App.css'
 
-const links = {
+const LINKS = {
   github: 'https://github.com/shamika2003',
   linkedin: 'https://www.linkedin.com/in/shamika-achinthya-23a12b262/',
   email: 'mailto:shamikaachintha9@gmail.com',
 }
 
-const scenes = {
+// Use the original eight filenames. The same four scenes switch with the theme.
+const BACKGROUNDS = {
   hero: ['ai_chip_dark.png', 'ai_chip_light.png'],
   about: ['ai_girl_dark.png', 'ai_girl_light.png'],
   work: ['code_left_dark.png', 'code_left_light.png'],
   contact: ['code_right_dark.png', 'code_right_light.png'],
 }
 
-function savedTheme() {
+function initialTheme() {
   try { return localStorage.getItem('shamika-theme') === 'light' ? 'light' : 'dark' }
   catch { return 'dark' }
 }
 
-function Scene({ name, theme, eager = false }) {
-  const [dark, light] = scenes[name]
-  const activeImage = theme === 'dark' ? dark : light
+function Arrow({ down = false }) {
+  return <span className="arrow" aria-hidden="true"><Icon name={down ? 'arrow-down' : 'arrow-up-right'} size={17} /></span>
+}
+
+function Scene({ scene, theme, priority = false }) {
+  const [dark, light] = BACKGROUNDS[scene]
   return (
-    <div className="scene" aria-hidden="true">
-      <img className="scene-img" src={`/backgrounds/${activeImage}`} alt="" loading={eager ? 'eager' : 'lazy'} fetchPriority={eager ? 'high' : undefined} />
-      <div className="scene-wash" />
-      <div className="scene-grid" />
+    <div className="scene" data-parallax aria-hidden="true">
+      <img className={`scene-image ${theme === 'dark' ? 'is-active' : ''}`} src={`/backgrounds/${dark}`} alt="" loading={priority && theme === 'dark' ? 'eager' : 'lazy'} fetchPriority={priority && theme === 'dark' ? 'high' : 'auto'} />
+      <img className={`scene-image ${theme === 'light' ? 'is-active' : ''}`} src={`/backgrounds/${light}`} alt="" loading={priority && theme === 'light' ? 'eager' : 'lazy'} fetchPriority={priority && theme === 'light' ? 'high' : 'auto'} />
+      <div className="scene-shade" />
+      <div className="scene-texture" />
     </div>
   )
 }
 
-function SmallArrow() { return <span aria-hidden="true">↗</span> }
-
-function ThemeToggle({ theme, onClick }) {
-  return <button type="button" className="theme-control" onClick={onClick} aria-label={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'} title={theme === 'dark' ? 'Light theme' : 'Dark theme'}>
-    <span className="theme-control-track"><span className="theme-control-thumb" /></span>
-    <span className="theme-control-label">{theme === 'dark' ? 'ECLIPSE' : 'HALO'}</span>
-  </button>
-}
-
-function ProjectDialog({ project, close }) {
+function ProjectDialog({ project, onClose }) {
+  const closeRef = useRef(null)
   useEffect(() => {
     if (!project) return undefined
-    const previousOverflow = document.body.style.overflow
+    const oldOverflow = document.body.style.overflow
+    const previousFocus = document.activeElement
     document.body.style.overflow = 'hidden'
-    function onKeyDown(event) { if (event.key === 'Escape') close() }
-    window.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.body.style.overflow = previousOverflow
-      window.removeEventListener('keydown', onKeyDown)
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') onClose()
+      if (event.key === 'Tab') {
+        const focusable = [...document.querySelectorAll('.dialog button, .dialog a')]
+        if (!focusable.length) return
+        const first = focusable[0]
+        const last = focusable[focusable.length - 1]
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus() }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus() }
+      }
     }
-  }, [project, close])
-
+    window.addEventListener('keydown', onKeyDown)
+    closeRef.current?.focus()
+    return () => {
+      document.body.style.overflow = oldOverflow
+      window.removeEventListener('keydown', onKeyDown)
+      previousFocus?.focus?.()
+    }
+  }, [project, onClose])
   if (!project) return null
   return (
-    <div className="dialog-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) close() }}>
-      <section className="project-dialog" role="dialog" aria-modal="true" aria-labelledby="project-dialog-title">
-        <div className="dialog-header"><span>PROJECT FILE / {project.number}</span><button type="button" onClick={close} aria-label="Close project details">CLOSE ×</button></div>
-        <p className="dialog-kicker">{project.category}</p>
-        <h2 id="project-dialog-title">{project.name}</h2>
+    <div className="dialog-underlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose() }}>
+      <section className="dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title">
+        <div className="dialog-top"><span>PROJECT / {project.number} — {project.category}</span><button ref={closeRef} onClick={onClose} type="button">CLOSE <Icon name="close" size={17} /></button></div>
+        <p className="dialog-eyebrow">SELECTED ENGINEERING WORK</p>
+        <h2 id="dialog-title">{project.name}</h2>
         <p className="dialog-lead">{project.lead}</p>
         <p className="dialog-description">{project.description}</p>
-        <div className="dialog-tech">{project.technologies.map((technology) => <span key={technology}>{technology}</span>)}</div>
-        <div className="dialog-bottom"><span>STATUS / {project.status}</span><a href={links.github} target="_blank" rel="noreferrer">GITHUB PROFILE <SmallArrow /></a></div>
+        <div className="dialog-tags">{project.technologies.map((tech) => <span key={tech}>{tech}</span>)}</div>
+        <div className="dialog-tail"><span>{project.status}</span><a href={LINKS.github} target="_blank" rel="noreferrer"><Icon name="github" size={17} /> GITHUB PROFILE <Arrow /></a></div>
       </section>
     </div>
   )
+}
+
+function usePageEffects() {
+  useEffect(() => {
+    const root = document.documentElement
+    const motion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const reveals = [...document.querySelectorAll('[data-reveal]')]
+    let revealObserver
+    if (motion && 'IntersectionObserver' in window) {
+      // Hide only elements that are safely below the current viewport.
+      reveals.forEach((el) => {
+        if (el.getBoundingClientRect().top > window.innerHeight * .87) el.classList.add('await-reveal')
+      })
+      revealObserver = new IntersectionObserver((entries, observer) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('revealed')
+            observer.unobserve(entry.target)
+          }
+        }
+      }, { threshold: 0.09, rootMargin: '0px 0px -6% 0px' })
+      reveals.forEach((el) => revealObserver.observe(el))
+    }
+    const sections = [...document.querySelectorAll('main > section[id]')]
+    const backgrounds = [...document.querySelectorAll('[data-parallax]')]
+    const navLinks = [...document.querySelectorAll('.nav a')]
+    const progress = document.querySelector('.page-progress')
+    let scheduled = false
+    const update = () => {
+      scheduled = false
+      // Dynamic viewport units already handle most sizing; this supports compact-height layout.
+      root.style.setProperty('--viewport-h', `${window.innerHeight}px`)
+      root.style.setProperty('--viewport-w', `${window.innerWidth}px`)
+      root.classList.toggle('compact-viewport', window.innerHeight < 720 && window.innerWidth > 760)
+      const scrollable = Math.max(1, document.documentElement.scrollHeight - window.innerHeight)
+      if (progress) progress.style.transform = `scaleX(${Math.min(1, window.scrollY / scrollable)})`
+      if (motion && window.innerWidth > 760) {
+        backgrounds.forEach((layer) => {
+          const rect = layer.parentElement.getBoundingClientRect()
+          if (rect.bottom > -80 && rect.top < window.innerHeight + 80) {
+            const delta = Math.max(-65, Math.min(65, (window.innerHeight / 2 - rect.top - rect.height / 2) * 0.065))
+            layer.style.setProperty('--parallax', `${delta.toFixed(1)}px`)
+          }
+        })
+      }
+      sections.forEach((section) => {
+        if (section.classList.contains('stage')) {
+          const rect = section.getBoundingClientRect()
+          const fraction = Math.min(1, Math.max(0, (window.innerHeight - rect.top) / (window.innerHeight + rect.height)))
+          section.style.setProperty('--scene-progress', String(fraction))
+        }
+      })
+      const marker = window.innerHeight * .43
+      const active = [...sections].reverse().find((s) => s.getBoundingClientRect().top <= marker)?.id || 'home'
+      navLinks.forEach((link) => {
+        if (link.getAttribute('href') === `#${active}`) link.setAttribute('aria-current', 'location')
+        else link.removeAttribute('aria-current')
+      })
+    }
+    const requestUpdate = () => {
+      if (!scheduled) { scheduled = true; window.requestAnimationFrame(update) }
+    }
+    update()
+    window.addEventListener('scroll', requestUpdate, { passive: true })
+    window.addEventListener('resize', requestUpdate)
+    return () => {
+      revealObserver?.disconnect()
+      window.removeEventListener('scroll', requestUpdate)
+      window.removeEventListener('resize', requestUpdate)
+    }
+  }, [])
 }
 
 function App() {
-  const [theme, setTheme] = useState(savedTheme)
+  const [theme, setTheme] = useState(initialTheme)
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeProject, setActiveProject] = useState(null)
+  const [selectedProjectId, setSelectedProjectId] = useState('nira-agent')
+  const selectedProject = projects.find((project) => project.id === selectedProjectId) || projects[0]
+  const closeProject = useCallback(() => setActiveProject(null), [])
+  usePageEffects()
 
   useEffect(() => {
     document.documentElement.style.colorScheme = theme
-    try { localStorage.setItem('shamika-theme', theme) } catch { /* privacy mode */ }
+    try { localStorage.setItem('shamika-theme', theme) } catch { /* Private browsing. */ }
   }, [theme])
 
-  const closeProject = () => setActiveProject(null)
-  const toggleTheme = () => setTheme((current) => current === 'dark' ? 'light' : 'dark')
-  const closeMenu = () => setMenuOpen(false)
+  const go = () => setMenuOpen(false)
+  return (
+    <div className={`site theme-${theme}`} id="top">
+      <div className="page-progress" aria-hidden="true" />
+      <div className="ambient-glow" aria-hidden="true" />
+      <header className="site-header">
+        <a className="brand" href="#home" onClick={go} aria-label="Shamika Achinthya — home"><span className="brand-crest">S<span>.</span>A</span><span className="brand-name">SHAMIKA ACHINTHYA<small>SOFTWARE / SYSTEMS / AUTOMATION</small></span></a>
+        <nav id="site-nav" className={`nav ${menuOpen ? 'nav-open' : ''}`} aria-label="Main navigation">
+          <a href="#home" onClick={go}>HOME</a><a href="#about" onClick={go}>ABOUT</a><a href="#work" onClick={go}>PROJECTS</a><a href="#experience" onClick={go}>EXPERIENCE</a><a href="#contact" onClick={go}>CONTACT</a>
+        </nav>
+        <div className="nav-actions"><button className="theme-toggle" type="button" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label={theme === 'dark' ? 'Switch to Halo light mode' : 'Switch to Eclipse dark mode'}><Icon name={theme === 'dark' ? 'moon' : 'sun'} size={17} /><span>{theme === 'dark' ? 'ECLIPSE' : 'HALO'}</span></button><button className="menu-toggle" type="button" aria-expanded={menuOpen} aria-controls="site-nav" onClick={() => setMenuOpen((open) => !open)}><Icon name={menuOpen ? 'close' : 'menu'} size={20} /><span>{menuOpen ? 'CLOSE' : 'MENU'}</span></button></div>
+      </header>
 
-  return <div className={`site theme-${theme}`} id="top">
-    <header className="site-header">
-      <a className="brand" href="#top" onClick={closeMenu} aria-label="Shamika Achinthya, back to top"><span className="brand-symbol">S<span>/</span>A</span><span className="brand-text">SHAMIKA ACHINTHYA<small>SOFTWARE · SYSTEMS · AUTOMATION</small></span></a>
-      <nav id="site-navigation" className={`nav ${menuOpen ? 'nav-open' : ''}`} aria-label="Main navigation">
-        <a href="#about" onClick={closeMenu}>ABOUT</a>
-        <a href="#work" onClick={closeMenu}>WORK</a>
-        <a href="#experience" onClick={closeMenu}>EXPERIENCE</a>
-        <a href="#contact" onClick={closeMenu}>CONTACT</a>
-      </nav>
-      <div className="header-actions"><ThemeToggle theme={theme} onClick={toggleTheme} /><button className="menu-button" type="button" aria-expanded={menuOpen} aria-controls="site-navigation" onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? 'CLOSE ×' : 'MENU ≡'}</button></div>
-    </header>
+      <main>
+        <section className="stage stage-hero" id="home" aria-labelledby="hero-title"><Scene scene="hero" theme={theme} priority />
+          <div className="stage-shell stage-shell-right"><div className="hero-copy">
+            <p className="section-id hero-id" data-reveal><span className="signal-dot" /> OPEN TO IT & SOFTWARE OPPORTUNITIES <i>01 / 04</i></p>
+            <p className="hero-subtitle" data-reveal>IT OFFICER · SOFTWARE ENGINEERING UNDERGRADUATE</p>
+            <h1 id="hero-title" data-reveal>Engineering<br />what <em>matters.</em></h1>
+            <p className="hero-description" data-reveal>I'm Shamika Achinthya. I build software, solve systems problems, and turn repetitive workflows into useful tools.</p>
+            <div className="hero-actions" data-reveal><a className="button button-solid" href="#work">EXPLORE PROJECTS <Arrow /></a><a className="button button-line" href="#about">DISCOVER MORE <Arrow down /></a></div>
+            <div className="hero-capabilities" data-reveal><span>JAVA / C# / PYTHON</span><span>IT OPERATIONS / AUTOMATION</span></div>
+          </div></div>
+          <span className="stage-edge" aria-hidden="true">001 — INTRODUCTION</span><a className="scroll-indicator" href="#about">SCROLL TO EXPLORE <Arrow down /></a>
+        </section>
 
-    <main>
-      <section className="panel panel-hero" id="home" aria-labelledby="hero-heading"><Scene name="hero" theme={theme} eager />
-        <div className="panel-inner align-right hero-layout"><div className="hero-content">
-          <div className="micro-line"><span className="live-dot" /> INDEPENDENT DEVELOPER / SRI LANKA <span className="micro-index">001 / 004</span></div>
-          <p className="mini-overline">IT OFFICER & SOFTWARE ENGINEERING UNDERGRADUATE</p>
-          <h1 id="hero-heading">Building<br />what <em>matters.</em></h1>
-          <p className="hero-lead">I’m Shamika Achinthya. I work where software, systems and real-world problems meet — building useful tools, thoughtful automation and reliable digital experiences.</p>
-          <div className="button-row"><a className="action action-primary" href="#work">EXPLORE MY WORK <SmallArrow /></a><a className="action action-outline" href="#about">DISCOVER MORE <span aria-hidden="true">↓</span></a></div>
-          <div className="hero-meta"><span>JAVA / C# / PYTHON</span><span>IT OPERATIONS / AUTOMATION</span></div>
-        </div></div>
-        <div className="vertical-index" aria-hidden="true">01 — INTRODUCTION</div><div className="edge-scroll" aria-hidden="true">SCROLL TO EXPLORE <span>↓</span></div>
-      </section>
+        <section className="stage stage-about" id="about" aria-labelledby="about-title"><Scene scene="about" theme={theme} />
+          <div className="stage-shell stage-shell-left"><div className="editorial-block">
+            <p className="section-id" data-reveal><span>02</span> / THE PERSON BEHIND THE CODE</p>
+            <h2 id="about-title" data-reveal>Curiosity.<br />Applied <em>daily.</em></h2>
+            <p className="section-statement" data-reveal>Useful technology begins with understanding the problem.</p>
+            <p className="prose" data-reveal>At Samurdhi Bank, I support banking systems, network connectivity and day-to-day IT operations. I also develop internal automation to reduce repetitive work and make processes clearer.</p>
+            <p className="prose" data-reveal>Outside my role, I explore enterprise Java, C#/.NET desktop applications, local AI, and Python-based research systems. I’m currently pursuing a BSc (Hons) in Software Engineering.</p>
+            <a className="section-link" href="#experience" data-reveal>EXPERIENCE & EDUCATION <Arrow /></a>
+          </div></div>
+          <div className="scene-bottomline" data-reveal><span>BUILD <b>01</b></span><span>TEST <b>02</b></span><span>REFINE <b>03</b></span><span>REPEAT <b>∞</b></span></div>
+        </section>
 
-      <section className="panel panel-about" id="about" aria-labelledby="about-heading"><Scene name="about" theme={theme} />
-        <div className="panel-inner align-left about-layout"><div className="glass-content about-content">
-          <p className="section-kicker"><span>02</span> / THE PERSON BEHIND THE CODE</p>
-          <h2 id="about-heading">Curiosity meets<br /><em>execution.</em></h2>
-          <p className="section-lead">Good technology should make complicated things feel simpler.</p>
-          <p className="section-copy">I support banking systems, networking and daily IT operations at Samurdhi Bank while developing automation to improve internal workflows. Beyond that work, I build applications across enterprise Java, C#/.NET, desktop AI and Python-based research.</p>
-          <p className="section-copy">I’m currently studying BSc (Hons) Software Engineering and hold a Professional Diploma in Software Engineering from the Java Institute for Advanced Technology.</p>
-          <a className="text-link" href="#experience">MORE ABOUT MY BACKGROUND <SmallArrow /></a>
-        </div></div>
-        <div className="about-bottom-strip"><div><span>WHAT DRIVES ME</span><strong>BUILD / TEST / REFINE</strong></div><div><span>CURRENT FOCUS</span><strong>ENGINEERING · AI · AUTOMATION</strong></div><div><span>BASED IN</span><strong>ANURADHAPURA, SRI LANKA</strong></div></div>
-      </section>
+        <section className="stage stage-work" id="work" aria-labelledby="work-title"><Scene scene="work" theme={theme} />
+          <div className="stage-shell stage-shell-right"><div className="editorial-block work-block work-console">
+            <p className="section-id work-section-id" data-reveal><span>03</span> / SELECTED ENGINEERING WORK <i>04 SYSTEMS</i></p>
+            <div className="work-head" data-reveal>
+              <div><h2 id="work-title">Built for <em>real use.</em></h2><p className="work-intro">Software, AI and automation — selected work.</p></div>
+              <div className="work-orbit" aria-hidden="true"><span /><span /><span /></div>
+            </div>
+            <div className="work-status" aria-hidden="true"><span className="status-spark" /> PORTFOLIO / PROJECT INDEX <span>01—04</span></div>
+            <div className="project-list project-selector" aria-label="Select a project">
+              {projects.map((project, index) => (
+                <button className={`project-item ${project.id === selectedProjectId ? 'is-selected' : ''}`} key={project.id} type="button" data-reveal style={{'--reveal-delay': `${index * 65}ms`}} onClick={() => setSelectedProjectId(project.id)} aria-pressed={project.id === selectedProjectId} aria-controls="project-focus" aria-label={`Select ${project.name}`}>
+                  <span className="project-number">{project.number}</span>
+                  <span className="project-info"><small>{project.category}</small><strong>{project.name}</strong></span>
+                  <span className="project-open" aria-hidden="true"><Icon name="arrow-up-right" size={19} /></span>
+                </button>
+              ))}
+            </div>
+            <div className="project-focus" id="project-focus" aria-live="polite" aria-atomic="true">
+              <div className="focus-header"><span><span className="focus-led" /> IN FOCUS / {selectedProject.number}</span><span>{selectedProject.status}</span></div>
+              <div className="focus-inner" key={selectedProject.id}>
+                <h3>{selectedProject.lead}</h3>
+                <p>{selectedProject.summary}</p>
+                <div className="focus-bottom"><div className="focus-tags">{selectedProject.technologies.slice(0, 4).map((tech) => <span key={tech}>{tech}</span>)}</div><button className="focus-detail" type="button" onClick={() => setActiveProject(selectedProject)}>READ CASE STUDY <Icon name="arrow-up-right" size={16}/></button></div>
+              </div>
+            </div>
+            <div className="project-linkline" data-reveal><span>SELECT A PROJECT TO EXPLORE</span><a href={LINKS.github} target="_blank" rel="noreferrer"><Icon name="github" size={17} /> GITHUB <Arrow /></a></div>
+          </div></div>
+        </section>
 
-      <section className="panel panel-work" id="work" aria-labelledby="work-heading"><Scene name="work" theme={theme} />
-        <div className="panel-inner align-right work-layout"><div className="work-content">
-          <p className="section-kicker"><span>03</span> / SELECTED ENGINEERING WORK</p>
-          <h2 id="work-heading">Not just ideas.<br /><em>Built systems.</em></h2>
-          <p className="work-intro">Different disciplines. One goal: software that does something useful.</p>
-          <div className="project-list">{projects.map((project) => <button type="button" className="project-row" key={project.id} onClick={() => setActiveProject(project)} aria-label={`Read details of ${project.name}`}>
-            <span className="project-num">{project.number}</span><span className="project-text"><span className="project-category">{project.category}</span><strong>{project.name}</strong><span className="project-summary">{project.summary}</span></span><span className="project-arrow" aria-hidden="true">↗</span>
-          </button>)}</div>
-          <div className="work-bottom"><span>PROJECT DETAILS OPEN ON CLICK</span><a href={links.github} target="_blank" rel="noreferrer">GITHUB PROFILE <SmallArrow /></a></div>
-        </div></div>
-      </section>
+        <section className="experience-section" id="experience" aria-labelledby="experience-title"><div className="experience-shell">
+          <p className="section-id" data-reveal><span>04</span> / BACKGROUND & TECHNICAL RANGE</p>
+          <div className="experience-head" data-reveal><h2 id="experience-title">Experience that<br /><em>informs the build.</em></h2><p>Practical IT support, formal software engineering study, and an appetite for systems that work reliably.</p></div>
+          <div className="experience-columns"><div className="experience-column" data-reveal><p className="column-id">PROFESSIONAL EXPERIENCE / 01</p><p className="date">NOV 2024 — PRESENT</p><h3>Information Technology Officer</h3><p className="place">Samurdhi Bank · Hidogama</p><p>Banking systems support, hardware and network troubleshooting, and internal workflow automation.</p></div>
+            <div className="experience-column" data-reveal><p className="column-id">EDUCATION / 02</p><p className="date">CURRENTLY STUDYING</p><h3>BSc (Hons) Software Engineering</h3><p className="place">Java Institute for Advanced Technology</p><div className="qualification"><p className="date">COMPLETED · 2025</p><h3>Professional Diploma in Software Engineering</h3><p className="place">Java Institute for Advanced Technology</p><p className="honors">Distinction: Object-Oriented Programming I<br />Distinction: Object-Oriented Systems Analysis & Design</p></div></div></div>
+          <div className="stack-row" data-reveal><span>TECHNICAL RANGE</span><div>JAVA <b>·</b> C# <b>·</b> .NET <b>·</b> PYTHON <b>·</b> JAKARTA EE <b>·</b> MYSQL <b>·</b> NETWORKING</div></div>
+        </div></section>
 
-      <section className="experience-band" id="experience" aria-labelledby="experience-heading"><div className="experience-shell">
-        <div className="band-heading"><p className="section-kicker"><span>04</span> / BACKGROUND & CAPABILITIES</p><h2 id="experience-heading">The work behind <em>the work.</em></h2></div>
-        <div className="experience-grid"><div className="experience-column"><p className="column-header">PROFESSIONAL EXPERIENCE <span>01</span></p><p className="date-line">NOV 2024 — PRESENT</p><h3>Information Technology Officer</h3><p className="place-line">Samurdhi Bank · Hidogama</p><p>Support banking systems, troubleshoot hardware and network issues, and develop internal automation to simplify operational workflows.</p></div>
-        <div className="experience-column"><p className="column-header">EDUCATION <span>02</span></p><p className="date-line">IN PROGRESS</p><h3>BSc (Hons) Software Engineering</h3><p className="place-line">Java Institute for Advanced Technology</p><p className="date-line second-date">COMPLETED · 2025</p><h3>Professional Diploma in Software Engineering</h3><p className="place-line">Java Institute for Advanced Technology</p><p className="academic-line">DISTINCTIONS / OOP I · OOSAD</p></div></div>
-        <div className="skill-footer"><span>TECHNICAL RANGE</span><p>JAVA <i>/</i> C# <i>/</i> PYTHON <i>/</i> .NET <i>/</i> JAKARTA EE <i>/</i> WPF <i>/</i> REACT <i>/</i> MYSQL <i>/</i> NETWORKING</p></div>
-      </div></section>
+        <section className="stage stage-contact" id="contact" aria-labelledby="contact-title"><Scene scene="contact" theme={theme} />
+          <div className="stage-shell stage-shell-left"><div className="editorial-block contact-copy">
+            <p className="section-id" data-reveal><span>05</span> / OPEN CHANNEL</p>
+            <h2 id="contact-title" data-reveal>Something to<br /><em>build together?</em></h2>
+            <p className="section-statement" data-reveal>Good ideas start with a conversation.</p>
+            <p className="prose" data-reveal>Open to software development, technical support and automation opportunities. Tell me what you're working on.</p>
+            <a className="contact-mail" href={LINKS.email} data-reveal><Icon name="mail" size={22} /> shamikaachintha9@gmail.com <Arrow /></a>
+            <div className="contact-socials" data-reveal><a href={LINKS.github} target="_blank" rel="noreferrer"><Icon name="github" size={18} /> GITHUB <Arrow /></a><a href={LINKS.linkedin} target="_blank" rel="noreferrer"><Icon name="linkedin" size={18} /> LINKEDIN <Arrow /></a></div>
+          </div></div>
+        </section>
+      </main>
 
-      <section className="panel panel-contact" id="contact" aria-labelledby="contact-heading"><Scene name="contact" theme={theme} />
-        <div className="panel-inner align-left contact-layout"><div className="glass-content contact-content">
-          <p className="section-kicker"><span>05</span> / WHAT'S NEXT?</p><h2 id="contact-heading">Let’s build<br /><em>something useful.</em></h2>
-          <p className="section-lead">Have a role, a project or a problem worth solving? I’d like to hear about it.</p>
-          <a className="contact-email" href={links.email}>shamikaachintha9@gmail.com <SmallArrow /></a>
-          <div className="contact-social"><a href={links.github} target="_blank" rel="noreferrer">GITHUB <SmallArrow /></a><a href={links.linkedin} target="_blank" rel="noreferrer">LINKEDIN <SmallArrow /></a></div>
-        </div></div>
-        <footer className="footer-bar"><span>© {new Date().getFullYear()} SHAMIKA ACHINTHYA ABESEKARA</span><span>DESIGNED WITH INTENTION · BUILT WITH REACT</span><a href="#top">BACK TO TOP ↑</a></footer>
-      </section>
-    </main>
-    <ProjectDialog project={activeProject} close={closeProject} />
-  </div>
+      {/* Intentionally no background image in the footer. */}
+      <footer className="site-footer"><div className="footer-inner"><div className="footer-signature">S<span>.</span>A <small>SHAMIKA ACHINTHYA</small></div><p>BUILD WITH PURPOSE.<br /><span>IMPROVE WITH EVERY ITERATION.</span></p><div className="footer-end"><span>© {new Date().getFullYear()} · SRI LANKA</span><a href="#home">BACK TO TOP <Icon name="arrow-up" size={16} /></a></div></div><div className="footer-accent" aria-hidden="true" /></footer>
+      <ProjectDialog project={activeProject} onClose={closeProject} />
+      <PortfolioAssistant />
+    </div>
+  )
 }
 
 export default App

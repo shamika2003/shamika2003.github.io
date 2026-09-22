@@ -1,0 +1,21 @@
+name = "shamika-portfolio-ai"
+main = "src/index.mjs"
+compatibility_date = "2026-09-22"
+
+[vars]
+ALLOWED_ORIGINS = "https://shamika2003.github.io,http://localhost:5173,http://127.0.0.1:5173"
+AI_MODEL = "openai/gpt-oss-20b"
+
+[[ratelimits]]
+name = "VISITOR_LIMITER"
+namespace_id = "17001"
+  [ratelimits.simple]
+  limit = 4
+  period = 60
+
+[[ratelimits]]
+name = "GLOBAL_LIMITER"
+namespace_id = "17002"
+  [ratelimits.simple]
+  limit = 20
+  period = 60

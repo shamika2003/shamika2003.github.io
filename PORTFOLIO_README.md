@@ -1,50 +1,88 @@
-# Shamika's cinematic portfolio
+# SHAMIKA AI — SETUP FOR WINDOWS / VS CODE
 
-This package is a **complete source-code overlay** for the existing Vite + React project already in `Shamika-Portfolio`.
+## A. Install the updated site (no AI key needed)
 
-It includes all source files, `src/main.jsx`, eight original backgrounds at their **exact original filenames**, and a GitHub Pages workflow. It intentionally **does not replace** `.git`, `package.json`, `package-lock.json`, `vite.config.js`, or `node_modules` because these already exist on your PC.
+This small ZIP intentionally contains **NO images, `.git`, `node_modules`, `package.json`, or lockfile**. It is an overlay for your existing V3 portfolio. Keep your original 8 images under `public/backgrounds/`.
 
-## Original background mapping
-
-| Section | Original filename (dark) | Original filename (light) | Copy arrangement |
-|---|---|---|---|
-| Hero | `ai_chip_dark.png` | `ai_chip_light.png` | Visual left, text right |
-| About | `ai_girl_dark.png` | `ai_girl_light.png` | Visual right, text left |
-| Projects | `code_left_dark.png` | `code_left_light.png` | Visual left, text right |
-| Contact/footer | `code_right_dark.png` | `code_right_light.png` | Visual right, text left |
-
-All eight images are in `public/backgrounds/` and are already referenced by `src/App.jsx`. **Do not rename them.**
-
-## Install locally
-
-With Vite stopped and PowerShell open at the existing `Shamika-Portfolio` folder:
+In VS Code PowerShell, inside `C:\Users\user\Documents\MULTI-LANG-PROJECT\Shamika-Portfolio`:
 
 ```powershell
-Expand-Archive -LiteralPath "$HOME\Downloads\Shamika_Portfolio_Cinematic.zip" -DestinationPath . -Force
+# Stop Vite with Ctrl+C first, then:
+$zip = Get-ChildItem "$HOME\Downloads" -Filter 'Shamika_Portfolio_AI_Addon*.zip' |
+    Sort-Object LastWriteTime -Descending | Select-Object -First 1
+if (-not $zip) { throw 'Download the ZIP first, or locate it with Ctrl+J in Chrome.' }
+Expand-Archive -LiteralPath $zip.FullName -DestinationPath (Get-Location).Path -Force
 npm.cmd run lint
 npm.cmd run build
 npm.cmd run dev
 ```
 
-If Chrome renamed your ZIP with `(1)`, use its exact filename or run `Ctrl+J` → Show in folder.
+Open http://localhost:5173/ — click the small glowing orb in the bottom-right. **It will answer from public, built-in portfolio notes even with no LLM connection.** It clearly labels this mode `PORTFOLIO GUIDE · AI OFFLINE`. No pretend AI responses.
 
-Open `http://localhost:5173/`.
+## B. Connect an actual LLM locally
 
-## Publish
+The backend uses **Cloudflare Workers** plus Groq's OpenAI-compatible chat-completions API, model `llama-3.3-70b-versatile`. Accounts, eligibility, prices, free limits and model availability may change. You need a Groq API key from https://console.groq.com/keys and a Cloudflare account. **Do not paste your API key into ChatGPT, source files, a commit or public Vite variables.**
 
-Only after local verification:
+In a SECOND VS Code PowerShell terminal:
 
 ```powershell
-git add src public index.html .github PORTFOLIO_README.md
-git commit -m "Build cinematic portfolio with themed backgrounds"
+cd worker
+Copy-Item .dev.vars.example .dev.vars
+notepad .dev.vars
+```
+
+Replace the example string in `.dev.vars` with your own key, save, and close Notepad. The nested `worker/.gitignore` excludes `.dev.vars` from Git.
+
+Start the Worker locally:
+
+```powershell
+npx.cmd wrangler dev --port 8787
+```
+
+Keep it running. In your original terminal, restart the frontend (`npm.cmd run dev`). The frontend automatically tries `http://127.0.0.1:8787` in development. Open the chatbot: it should say `AI CONNECTED` when the Worker is responding and has a configured secret. If it does not, check both terminals. The `Portfolio guide` fallback remains usable even when the Worker is offline.
+
+## C. Publish the secure Worker and connect GitHub Pages
+
+Only after local testing and reviewing any provider costs:
+
+```powershell
+cd worker
+npx.cmd wrangler login
+npx.cmd wrangler deploy
+npx.cmd wrangler secret put GROQ_API_KEY
+```
+
+The CLI prompts you for the key; **do not write it in a command or GitHub file**. `secret put` can trigger an immediate redeploy. Copy the displayed Worker URL, for example `https://shamika-portfolio-ai.YOUR-SUBDOMAIN.workers.dev` (example only).
+
+Open your portfolio repository:
+`https://github.com/shamika2003/shamika2003.github.io`
+
+Set **Settings → Secrets and variables → Actions → Variables → New repository variable**:
+
+- Name: `VITE_PORTFOLIO_API_URL`
+- Value: your public Cloudflare Worker URL (no `/chat`, no trailing slash, no API key)
+
+The included `.github/workflows/deploy.yml` reads that URL as a public build variable. It is safe for frontend code. Push the updated site:
+
+```powershell
+cd ..
+npm.cmd run lint
+npm.cmd run build
+git status
+git add src worker .github README.md PORTFOLIO_README.md
+git commit -m "Add portfolio AI assistant"
 git push origin main
 ```
 
-On GitHub: Repository → **Settings** → **Pages** → **Build and deployment** → **Source: GitHub Actions**. The workflow deploys `dist/` on pushes to `main`.
+If you have changed `index.html`, include that too. Verify **Settings → Pages → Source: GitHub Actions** and wait for the Actions deployment. Visit `https://shamika2003.github.io/`.
 
-## Notes
+## Maintenance
 
-- Profile links in `src/App.jsx` point to the known GitHub and LinkedIn accounts.
-- Individual project repository links are **not invented**. Each project row opens a real details dialog, and a separate GitHub-profile link is provided.
-- This bundle intentionally doesn't include an unverified or outdated CV PDF. Add the final PDF to `public/` once finalized, then add a download button.
-- Do not publish private bank data or proprietary code in any public repository.
+- Public knowledge: `worker/src/knowledge.mjs`. Review whenever skills, projects or links change. Never paste private banking/customer data.
+- Browser assistant and fallback FAQ: `src/PortfolioAssistant.jsx`.
+- Visual styling: `src/PortfolioAssistant.css`.
+- Worker routing/rate limits: `worker/src/index.mjs` and `worker/wrangler.toml`.
+- Automated backend tests: `node --test worker/test/worker.test.mjs`.
+- For your local frontend, an optional `.env.local` can set `VITE_PORTFOLIO_API_URL=https://...` to test the deployed Worker. Do not put secrets in any `VITE_` value.
+
+Security note: CORS is **not authentication**. The Worker has per-IP and shared 60-second Cloudflare rate-limit bindings, strict request lengths, a capped output length and timeout. Check your Groq account quota/usage and set provider-side spend limits if available. Shared IPs can be throttled together. Worker/browser information is intentionally limited to this portfolio; it is NOT an autonomous PC agent.
