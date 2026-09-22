@@ -1,0 +1,19 @@
+SHAMIKA PORTFOLIO — ECLIPSE / HALO REDESIGN
+
+1. Stop Vite with Ctrl+C.
+2. Extract this ZIP into your existing Shamika-Portfolio root folder, overwriting matching files.
+   The ZIP only contains src/App.jsx, src/App.css, src/index.css, src/main.jsx, and index.html.
+   It does NOT replace/delete .git, package.json, package-lock.json, node_modules, public, or GitHub workflow.
+3. Open a terminal in your Shamika-Portfolio root and run:
+   npm.cmd run dev
+4. Check http://localhost:5173/
+5. In another terminal run:
+   npm.cmd run build
+   npm.cmd run lint
+
+If you previously extracted Stage 1, your public/Shamika_Achinthya_CV.pdf should already exist.
+Portfolio CV button uses that file. Update the PDF later when your CV is finalized.
+
+THEMES: Eclipse (dark) and Halo (light), switched with button in header.
+NO PERSONAL PHOTO is displayed. Existing photo file, if any, remains untouched but unused.
+PROJECT LINKS: No unconfirmed project repo URLs were invented; project buttons open actual built-in case study panels.
