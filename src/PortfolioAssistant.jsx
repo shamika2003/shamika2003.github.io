@@ -17,10 +17,10 @@ function localAnswer(text) {
   // Answer personal identity questions before project name matching: "Who are you, NIRA?"
   // is about NIRA herself, not the desktop Nira Agent project.
   if (/\b(who are you|who r u|what(?:'s| is) your name|tell me about yourself|what are you|are you nira|who is nira)\b/.test(q) && !/\bnira agent\b/.test(q)) {
-    return 'Hey, it’s me, NIRA. I’m the one you’re talking to, not Shamika in disguise. He builds the things; I tell you what’s interesting about them.'
+    return 'I’m NIRA. Shamika’s building my full desktop agent, and I’m here on his portfolio too. Same girl, smaller playground. What did you want to know?'
   }
   if (/\b(orb|particle body|desktop body)\b/.test(q)) {
-    return 'That little symbol is just my chat icon here. The full desktop Nira Agent has the animated particle body; this website conversation is text-only.'
+    return 'That little symbol is my chat icon here. My desktop agent uses the full animated particle form; this website version is where you and I talk.'
   }
   if (/^(hi|hey|hello|yo|sup|hiya)[!?. ]*$/.test(q)) return 'Hey. It’s me, NIRA. What caught your eye?'
   const project = projects.find((item) =>
@@ -36,7 +36,7 @@ function localAnswer(text) {
   if (/experience|bank|job|work|career|role/.test(q)) return 'Shamika has worked as an Information Technology Officer at Samurdhi Bank, Hidogama, since November 2024. His work includes banking-system support, networking, troubleshooting and internal workflow automation.'
   if (/education|study|degree|diploma|institute|qualification/.test(q)) return 'Shamika is pursuing a BSc (Hons) in Software Engineering at Java Institute for Advanced Technology. He completed a Professional Diploma in Software Engineering in 2025, with distinctions in Object-Oriented Programming I and Object-Oriented Systems Analysis & Design.'
   if (/projects|portfolio|built|make|create/.test(q)) return `His featured projects are ${projects.map((item) => item.name).join(', ')}. Ask me about any project by name, or open the Projects section.`
-  if (/\bnira\b|\belvara\b/.test(q) && !/agent|project/.test(q)) return 'It’s me, NIRA. I’m here to talk, not read you a corporate brochure. Ask me what you actually want to know.'
+  if (/\bnira\b|\belvara\b/.test(q) && !/agent|project/.test(q)) return 'It’s me, NIRA. I’m here on Shamika’s website while he keeps building the full desktop agent. No corporate brochure required.'
   if (/who|about|shamika|hello|hi\b/.test(q)) return 'Shamika is an IT Officer and Software Engineering undergraduate. He builds practical software and automation, including Nira Agent and GlobalTrade. Want a specific project?'
   return 'The live model isn’t connected, so I’m sticking to the public portfolio notes. Try Nira Agent, GlobalTrade, TradeAI, or Shamika’s experience.'
 }
@@ -170,7 +170,7 @@ export default function PortfolioAssistant() {
           </div>)}
           {busy && !messages.some((m) => m.id && m.text.trim()) && <div className="assistant-thinking" role="status"><span/><span/><span/><small>THINKING</small></div>}
         </div>
-        {messages.length < 4 && <div className="assistant-prompts" aria-label="Suggested questions">{STARTERS.map((question) => <button type="button" key={question} onClick={() => ask(question)} disabled={busy}>{question}<Icon name="arrow-up-right" size={13}/></button>)}</div>}
+        {messages.length === 1 && draft.length === 0 && !busy && <div className="assistant-prompts" aria-label="Suggested questions">{STARTERS.map((question) => <button type="button" key={question} onClick={() => ask(question)} disabled={busy}>{question}<Icon name="arrow-up-right" size={13}/></button>)}</div>}
         {error && <p className="assistant-error" role="alert">{error}</p>}
         <form className="assistant-composer" onSubmit={(event) => { event.preventDefault(); ask(draft) }}>
           <label htmlFor="assistant-input" className="visually-hidden">Message</label>
