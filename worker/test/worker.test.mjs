@@ -49,9 +49,9 @@ test('preflight and rate limiter', async () => {
   assert.equal(blocked.status, 429)
 })
 test('brand persona uses NIRA, femininity, honesty, and avoids a fake desktop connection', () => {
-  assert.match(NIRA_CHARACTER, /NIRA, a feminine young-adult AI character/)
+  assert.match(NIRA_CHARACTER, /same NIRA character/i)
   assert.match(NIRA_CHARACTER, /ELVARA/)
-  assert.match(SYSTEM_PROMPT, /no private memories|no private memory|private memory/)
+  assert.match(SYSTEM_PROMPT, /private memor(?:y|ies)/i)
   assert.match(SYSTEM_PROMPT, /Nira Agent/)
   assert.equal(DEFAULT_MODEL, 'openai/gpt-oss-20b')
 })

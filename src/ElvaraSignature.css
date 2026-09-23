@@ -1,0 +1,49 @@
+/* ELVARA brand lineage — designed after the supplied ELVARA Veil guide.
+   No new image or external font. Preserves existing Eclipse/Halo themes. */
+.elvara-hero-origin,.elvara-about-origin,.elvara-contact-origin{color:var(--muted);position:relative;z-index:2}
+.elvara-hero-origin{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:13px;font:750 10px/1.6 Consolas,monospace;letter-spacing:.09em}
+.elvara-dot{width:5px;height:5px;flex:0 0 5px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent)}
+.elvara-origin-sep{color:var(--accent);opacity:.75}
+.elvara-about-origin,.elvara-contact-origin{font-size:clamp(12px,.93vw,14px);line-height:1.55;padding-left:14px;border-left:2px solid var(--accent);margin:17px 0 18px;max-width:570px}
+.elvara-about-origin>span,.elvara-contact-origin>span{display:block;color:var(--accent);font:750 10px/1.5 Consolas,monospace;letter-spacing:.12em;margin-bottom:4px}
+.elvara-about-origin>strong{color:var(--ink);letter-spacing:.13em;font-weight:850}
+.elvara-contact-origin{margin:0 0 20px;max-width:510px}
+.elvara-footer{background:var(--strong);isolation:isolate}
+.elvara-footer-prelude,.elvara-footer-studio{width:min(1450px,calc(100% - clamp(44px,10vw,192px)));margin-inline:auto}
+.elvara-footer-prelude{display:flex;justify-content:space-between;gap:20px;padding-top:30px;color:var(--quiet);font:740 10px/1.5 Consolas,monospace;letter-spacing:.14em}
+.elvara-footer-prelude>span:last-child{display:flex;align-items:center;gap:12px;color:var(--accent)}
+.elvara-footer-prelude i{width:36px;height:1px;background:var(--accent)}
+.elvara-footer .footer-inner{padding-top:32px;padding-bottom:45px}
+.elvara-footer-studio{border-top:1px solid var(--line);display:grid;grid-template-columns:minmax(0,1fr) 32px minmax(0,1fr) 32px minmax(0,1fr);gap:clamp(8px,2vw,27px);align-items:center;padding:26px 0 39px}
+.elvara-studio-cell{min-width:0;display:flex;flex-direction:column;gap:8px}
+.elvara-studio-index{font:740 10px/1.3 Consolas,monospace;letter-spacing:.11em;color:var(--accent)}
+.elvara-studio-cell strong{font-size:clamp(16px,1.6vw,24px);font-weight:820;line-height:1.1;letter-spacing:-.04em;color:var(--ink)}
+.elvara-studio-cell strong span{color:var(--muted)}
+.elvara-studio-cell strong.elvara-wordmark{letter-spacing:.21em;font-size:clamp(17px,1.8vw,26px);font-weight:650}
+.elvara-studio-cell small{color:var(--quiet);font:670 10px/1.5 Consolas,monospace;letter-spacing:.045em}
+.elvara-studio-connector{height:1px;background:linear-gradient(90deg,var(--line),var(--accent),var(--line));position:relative}
+.elvara-studio-connector:after{content:'';position:absolute;right:0;top:-2px;width:5px;height:5px;border-radius:50%;background:var(--accent)}
+.assistant-identity>small{display:flex;align-items:center;flex-wrap:wrap;column-gap:9px;row-gap:2px}
+.assistant-created-by{color:var(--accent);font-weight:770;letter-spacing:.02em;white-space:nowrap}
+.assistant-status{white-space:nowrap}
+.assistant-foot b{font:inherit;color:var(--accent)}
+@media(max-width:1150px){.elvara-footer-prelude,.elvara-footer-studio{width:calc(100% - 84px)}}
+@media(max-width:760px){.elvara-footer-prelude,.elvara-footer-studio{width:calc(100% - 42px)}.elvara-footer-prelude{font-size:9px;flex-wrap:wrap}.elvara-footer-studio{grid-template-columns:1fr 14px 1fr;gap:18px 10px}.elvara-footer-studio .elvara-studio-connector:nth-of-type(4){display:none}.elvara-footer-studio .elvara-studio-cell:last-child{grid-column:1/-1;border-top:1px solid var(--line);padding-top:19px}.elvara-studio-cell small{font-size:9px}.elvara-hero-origin{font-size:9px}}
+@media(max-width:440px){.elvara-footer-prelude,.elvara-footer-studio{width:calc(100% - 34px)}.elvara-footer-studio{grid-template-columns:1fr}.elvara-studio-connector{display:none}.elvara-footer-studio .elvara-studio-cell:last-child{grid-column:auto}.elvara-studio-cell+.elvara-studio-cell{padding-top:16px;border-top:1px solid var(--line)}.assistant-created-by{display:none}.elvara-hero-origin{margin-top:8px;gap:7px}.elvara-about-origin{margin:12px 0;font-size:12px}}
+@media(max-height:720px) and (min-width:761px){.elvara-hero-origin{margin-top:8px;font-size:9px}.elvara-about-origin{font-size:12px;margin:12px 0}}
+@media(prefers-reduced-motion:reduce){.elvara-dot{box-shadow:none}}
+
+/* ELVARA signature statement: full of intent, not another full-height section. */
+.elvara-manifesto{width:min(1450px,calc(100% - clamp(44px,10vw,192px)));margin-inline:auto;border-top:1px solid var(--line);padding:clamp(28px,4.2vw,62px) 0 clamp(26px,4.1vw,54px);position:relative;isolation:isolate}
+.elvara-manifesto-heading{display:flex;align-items:center;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;color:var(--quiet);font:750 10px/1.5 Consolas,monospace;letter-spacing:.12em}
+.elvara-manifesto-heading>span:first-child{color:var(--accent)}
+.elvara-manifesto-quote{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:.33em;row-gap:0;margin:clamp(13px,2.1vw,28px) 0 clamp(18px,2.5vw,32px);font-size:clamp(25px,3.7vw,58px);font-weight:770;letter-spacing:-.055em;line-height:1.16;color:var(--ink)}
+.elvara-manifesto-quote span{font-weight:550;color:var(--muted)}
+.elvara-manifesto-quote strong{font-weight:820;background:linear-gradient(95deg,var(--ink) 0%,var(--accent) 94%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.elvara-manifesto-rule{height:1px;background:var(--line);position:relative;overflow:hidden}
+.elvara-manifesto-rule i{display:block;height:100%;width:23%;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:elvara-manifesto-sweep 8s ease-in-out infinite alternate}
+@keyframes elvara-manifesto-sweep{from{transform:translateX(-100%)}to{transform:translateX(450%)}}
+@media(max-width:1150px){.elvara-manifesto{width:calc(100% - 84px)}}
+@media(max-width:760px){.elvara-manifesto{width:calc(100% - 42px)}.elvara-manifesto-heading{font-size:9px}.elvara-manifesto-quote{font-size:clamp(29px,7vw,42px);display:block}.elvara-manifesto-quote>*{display:block}}
+@media(max-width:440px){.elvara-manifesto{width:calc(100% - 34px)}.elvara-manifesto-heading>span:last-child{display:none}}
+@media(prefers-reduced-motion:reduce){.elvara-manifesto-rule i{animation:none;transform:none}}

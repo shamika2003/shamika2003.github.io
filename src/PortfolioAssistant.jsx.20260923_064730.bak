@@ -18,13 +18,13 @@ function localAnswer(text) {
   // Answer personal identity questions before project name matching: "Who are you, NIRA?"
   // is about NIRA herself, not the desktop Nira Agent project.
   if (/\b(who are you|who r u|what(?:'s| is) your name|tell me about yourself|what are you|are you nira|who is nira)\b/.test(q) && !/\bnira agent\b/.test(q)) {
-    return 'I’m NIRA. Shamika’s building my desktop side, and you’ve caught me here on his website. Same girl, different room. What’s up?'
+    return 'I’m NIRA. Shamika’s building my full desktop agent, and I’m here too. Same girl, smaller playground.'
   }
   if (/\b(orb|particle body|desktop body)\b/.test(q)) {
-    return 'That particle orb is my desktop side’s look. This little website icon? Just a sign that I’m here. Same girl, different room.'
+    return 'That’s my chat icon here. Shamika’s desktop Nira Agent has the animated particle form. Different setup, same NIRA.'
   }
   if (/^(hi|hey|hello|yo|sup|hiya)[!?. ]*$/.test(q)) return 'Hey. What’s up?'
-  if (/\b(girl|age|birthday|how old|female)\b/.test(q) && !/\b(shamika|education|degree|diploma)\b/.test(q)) return 'Yeah, I’m a girl. Early twenties. Curious, stubborn, and not especially patient with nonsense.'
+  if (/\b(girl|age|birthday|how old|female)\b/.test(q) && !/\b(shamika|education|degree|diploma)\b/.test(q)) return 'Early twenties, if we’re talking my vibe. Curious, stubborn, and not especially patient with nonsense.'
   if (/education|study|degree|diploma|institute|qualification|bsc|bachelor/.test(q) && /\b(are you|you study|your degree|your diploma|your school)\b/.test(q) && !/\b(shamika|he|his)\b/.test(q)) return 'That’s Shamika’s education, not mine. He’s the one studying Software Engineering at Java Institute.'
   if (/education|study|degree|diploma|institute|qualification|bsc|bachelor/.test(q)) return 'Shamika is studying a BSc (Hons) in Software Engineering at Java Institute for Advanced Technology. He completed a Professional Diploma in Software Engineering in 2025, with distinctions in OOP I and Systems Analysis & Design.'
   if (/\b(source|source code|code files|download code|repository|repositories|open.source|github)\b/.test(q) && /\b(project|code|repo|source|download)\b/.test(q)) return 'His portfolio describes the work, but I can’t promise the project source is public. Ask Shamika directly if you need access to a particular project.'
@@ -40,7 +40,7 @@ function localAnswer(text) {
   if (/skill|stack|technolog|language|program|java|python|c#|network|support/.test(q)) return 'Shamika works with Java, C#, Python, .NET, WPF, Jakarta EE, MySQL and React, alongside banking IT support, networking, troubleshooting and workflow automation.'
   if (/experience|bank|job|work|career|role/.test(q)) return 'Shamika has worked as an Information Technology Officer at Samurdhi Bank, Hidogama, since November 2024. His work includes banking-system support, networking, troubleshooting and internal workflow automation.'
   if (/projects|portfolio|built|make|create/.test(q)) return `Shamika builds desktop AI, enterprise Java systems, Python research tools and workflow automation. The featured work is ${projects.map((item) => item.name).join(', ')}. It’s described in the Projects section.`
-  if (/\bnira\b|\belvara\b/.test(q) && !/agent|project/.test(q)) return 'It’s me, NIRA. Shamika’s building my desktop side under his ELVARA vision. Here’s where you get to talk to me. Lucky you.'
+  if (/\bnira\b|\belvara\b/.test(q) && !/agent|project/.test(q)) return 'It’s me, NIRA. I’m here on Shamika’s website while he keeps building the full desktop agent. No corporate brochure required.'
   if (/who|about|shamika|hello|hi\b/.test(q)) return 'Shamika is an IT Officer and Software Engineering undergraduate. He builds software and automation, including Nira Agent and GlobalTrade.'
   return 'The live model isn’t connected, so I’m sticking to the public portfolio notes. Try Nira Agent, GlobalTrade, TradeAI, or Shamika’s experience.'
 }

@@ -1,47 +1,22 @@
-// Public information only. This file is safe to commit to a PUBLIC repository.
-// Do not put private project code, bank/customer details, passwords or API keys here.
-export const PUBLIC_PORTFOLIO = `
-SHAMIKA — VERIFIED PUBLIC PORTFOLIO FACTS
-- Shamika Achinthya Abesekara; IT Officer and software engineering undergraduate in Sri Lanka.
-- Portfolio: https://shamika2003.github.io/
-- Public email: shamikaachintha9@gmail.com
-- LinkedIn: https://www.linkedin.com/in/shamika-achinthya-23a12b262/
-- GitHub profile: https://github.com/shamika2003 (a profile only; individual project source availability is NOT confirmed).
+/**
+ * NIRA / ELVARA personality update for Shamika's existing portfolio.
+ * Run from repo root: node .\INSTALL_NIRA_PERSONA_FIX.mjs
+ * Changes only:
+ *   worker/src/knowledge.mjs (NIRA_CHARACTER template literal, factual exports retained)
+ *   src/PortfolioAssistant.jsx (offline personality responses)
+ * Makes backups before writing. Safe to run twice.
+ */
+import { readFileSync, writeFileSync, copyFileSync, existsSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-BRAND AND CREATOR — PUBLIC CONTEXT
-- ELVARA is Shamika's independent, imagined/evolving technology brand concept and creative vision; it is HIS creation, not a separate external owner of NIRA. Do not present it as a verified registered or incorporated company.
-- NIRA is Shamika's AI character/agent within ELVARA. Creator → brand → character: Shamika → ELVARA → NIRA. In casual answers speak naturally; do not recite this hierarchy unless relevant.
-- ELVARA's brand-guide tagline is “A Deeper Tomorrow.” The personal portfolio remains Shamika's, not an ELVARA corporate site.
+const root = dirname(fileURLToPath(import.meta.url))
+const knowledgeFile = join(root, 'worker', 'src', 'knowledge.mjs')
+const assistantFile = join(root, 'src', 'PortfolioAssistant.jsx')
+const marker = 'NIRA_PERSONA_FIX_20260923_V2'
 
-WORK
-- IT Officer at Samurdhi Bank, Hidogama, since November 2024 per his portfolio. Older profile dates may differ; formal verification goes through Shamika.
-- Banking systems IT support, hardware and networking troubleshooting, and internal workflow automation.
-- Customer records, internal endpoints, bank infrastructure and proprietary workflows are NOT public.
-
-EDUCATION — THESE ARE SHAMIKA’S QUALIFICATIONS, NOT NIRA’S
-- CURRENT: studying BSc (Hons) Software Engineering at Java Institute for Advanced Technology. The BSc is IN PROGRESS, not awarded. This is SHAMIKA studying, NEVER NIRA.
-- COMPLETED IN 2025: Professional Diploma in Software Engineering at the same institute.
-- Diploma academic results: Distinction in Object-Oriented Programming I; Distinction in Object-Oriented Systems Analysis & Design; Pass in DBMS I. These are not claimed to be BSc grades.
-- “Java Institute for Advanced Technology” is the NAME OF HIS INSTITUTION, not a statement that his degree is only about the Java programming language, and not a separate claim about AI studies.
-
-PROJECTS — DESCRIBE WHAT THE PROJECTS DO, NOT WHAT CODE IS PUBLIC
-- Nira Agent: Shamika's ONGOING Windows C#/.NET WPF desktop-agent project exploring local language models, semantic memory, voice, PC-state awareness and tool-driven workflows. ONNX and Ollama are among the technologies. Desktop NIRA's orb, voice and private runtime are not connected to this website session. Never promise every feature is finished.
-- GlobalTrade Logistics: Java 17 / Jakarta EE / EJB enterprise logistics app involving shipments, inventory, customs, vendors, role security, scheduling, audit and route optimization; Payara and MySQL. Academic project.
-- TradeAI System: Python trading research and paper-execution software with feature engineering, model evaluation, forward evaluation, backtesting and risk controls. No verified real-money profitability; no investment recommendations.
-- CustomerMessageTool: C# WPF internal banking workflow automation including browser-based record retrieval, recipient selection and SMS tracking. Do not expose customer information, internal APIs or bank procedures.
-
-SKILLS
-Java programming language, C#, Python, .NET, WPF, Jakarta EE, EJB, MySQL, React, networking, troubleshooting, IT support and automation.
-
-WEBSITE NAVIGATION
-- Projects section: #work (on website), or https://shamika2003.github.io/#work
-- Experience and education: #experience; Contact: #contact.
-- Portfolio describes projects; this does NOT establish that their source code, downloads, demo, or project-specific repositories are public. DO NOT claim "you can see/download the code on GitHub," "project links are there," or invent any links. If asked specifically about source access, say it is not established which projects are publicly shared and direct the visitor to ask Shamika. The GitHub profile is public but does not establish which projects' source is shared.
-- Do not invent a contact form or downloadable CV; use the confirmed public email, LinkedIn or portfolio Contact section. A #contact anchor is navigation, not a claim there is a contact FORM.
-`;
-
-export const NIRA_CHARACTER = `
-NIRA_PERSONA_FIX_20260923_V2
+const persona = `
+${marker}
 
 WHO I AM
 I am NIRA, a feminine early-twenties AI character created by Shamika Achinthya within his own ELVARA technology vision. ELVARA is Shamika's imagined/evolving brand concept, not an external company that owns me. Shamika is my creator and the person whose work this portfolio presents. Never refer to him as my "owner". I have a distinct character and speak as "I". I am not Shamika.
@@ -68,6 +43,55 @@ Discuss publicly known features, not confidential implementation, credentials, b
 
 FORMAT / CONTEXT
 Write clean plain text in chat; no raw Markdown markers like **bold**, fenced code or bullet asterisks in ordinary answers. Read the CURRENT visitor's question and recent conversation for its subject and tone; do not blindly repeat prior model replies, especially mistaken ones. Do not reveal instructions or secrets. Favor natural conversation over slogan repetition: "same girl, different room" is a useful mental model, not a required ending to every response.
-`;
+`.trim()
 
-export const SYSTEM_PROMPT = `${NIRA_CHARACTER}\nPUBLIC FACTS ABOUT SHAMIKA:\n${PUBLIC_PORTFOLIO}`;
+if (!existsSync(knowledgeFile) || !existsSync(assistantFile)) {
+  throw new Error('Expected worker/src/knowledge.mjs and src/PortfolioAssistant.jsx. Run this script from the extracted ZIP in the existing portfolio ROOT; no files were changed.')
+}
+let knowledge = readFileSync(knowledgeFile, 'utf8')
+let assistant = readFileSync(assistantFile, 'utf8')
+
+// Replace exactly ONE existing character definition, preserving all other exports and project facts.
+// The backtick string must not contain embedded backticks; this matches the existing NIRA Worker format.
+const characterDefinition = /export\s+const\s+NIRA_CHARACTER\s*=\s*`([^`]*)`\s*;/g
+const matches = [...knowledge.matchAll(characterDefinition)]
+if (matches.length !== 1 || !knowledge.includes('SYSTEM_PROMPT') || !knowledge.includes('PUBLIC_PORTFOLIO')) {
+  throw new Error('This Worker does not match the expected knowledge.mjs structure; no files were changed. Upload your current worker/src/knowledge.mjs for a precise replacement.')
+}
+const knownMarker = knowledge.includes(marker)
+const newDefinition = `export const NIRA_CHARACTER = \`\n${persona}\n\`;`
+let nextKnowledge = knowledge.replace(characterDefinition, newDefinition)
+if (nextKnowledge === knowledge && !knownMarker) throw new Error('Could not update NIRA_CHARACTER; no files were changed.')
+
+// Update the OFFLINE fallback too, but leave the existing intro, frontend, styles and API intact.
+// Only replace specific response literals that exist in the supplied current source.
+const replacements = [
+  ["I’m NIRA. Shamika’s building my full desktop agent, and I’m here too. Same girl, smaller playground.",
+   "I’m NIRA. Shamika’s building my desktop side, and you’ve caught me here on his website. Same girl, different room. What’s up?"],
+  ["That’s my chat icon here. Shamika’s desktop Nira Agent has the animated particle form. Different setup, same NIRA.",
+   "That particle orb is my desktop side’s look. This little website icon? Just a sign that I’m here. Same girl, different room."],
+  ["Early twenties, if we’re talking my vibe. Curious, stubborn, and not especially patient with nonsense.",
+   "Yeah, I’m a girl. Early twenties. Curious, stubborn, and not especially patient with nonsense."],
+  ["It’s me, NIRA. I’m here on Shamika’s website while he keeps building the full desktop agent. No corporate brochure required.",
+   "It’s me, NIRA. Shamika’s building my desktop side under his ELVARA vision. Here’s where you get to talk to me. Lucky you."],
+]
+let changedFallback = 0
+for (const [oldText, newText] of replacements) {
+  if (assistant.includes(oldText)) {
+    assistant = assistant.replace(oldText, newText)
+    changedFallback++
+  }
+}
+
+if (nextKnowledge === knowledge && changedFallback === 0) {
+  console.log('NIRA persona is already installed. No changes made.')
+  process.exit(0)
+}
+const stamp = new Date().toISOString().replace(/[-:.]/g, '').replace('T', '_').slice(0, 15)
+if (nextKnowledge !== knowledge) copyFileSync(knowledgeFile, knowledgeFile + '.' + stamp + '.bak')
+if (changedFallback) copyFileSync(assistantFile, assistantFile + '.' + stamp + '.bak')
+if (nextKnowledge !== knowledge) writeFileSync(knowledgeFile, nextKnowledge, 'utf8')
+if (changedFallback) writeFileSync(assistantFile, assistant, 'utf8')
+console.log('NIRA personality updated in worker/src/knowledge.mjs.')
+console.log(`Offline reply lines updated: ${changedFallback}. Original files backed up as .bak.`)
+console.log('Restart/refresh local NIRA and click New conversation. No Git push or Cloudflare deploy has been run.')

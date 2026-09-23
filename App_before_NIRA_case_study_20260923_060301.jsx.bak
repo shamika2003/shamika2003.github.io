@@ -2,7 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { projects } from './data/projects.js'
 import Icon from './Icon.jsx'
 import PortfolioAssistant from './PortfolioAssistant.jsx'
-import NiraCaseStudy from './NiraCaseStudy.jsx'
 import './App.css'
 import './ElvaraSignature.css'
 
@@ -83,7 +82,7 @@ function ProjectDialog({ project, onClose }) {
   )
 }
 
-function usePageEffects(caseStudyOpen) {
+function usePageEffects() {
   useEffect(() => {
     const root = document.documentElement
     const motion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -151,42 +150,22 @@ function usePageEffects(caseStudyOpen) {
       window.removeEventListener('scroll', requestUpdate)
       window.removeEventListener('resize', requestUpdate)
     }
-  }, [caseStudyOpen])
+  }, [])
 }
 
 function App() {
   const [theme, setTheme] = useState(initialTheme)
   const [menuOpen, setMenuOpen] = useState(false)
-  const [caseStudyOpen, setCaseStudyOpen] = useState(() => window.location.hash === '#/projects/nira-agent')
   const [activeProject, setActiveProject] = useState(null)
   const [selectedProjectId, setSelectedProjectId] = useState('nira-agent')
   const selectedProject = projects.find((project) => project.id === selectedProjectId) || projects[0]
   const closeProject = useCallback(() => setActiveProject(null), [])
-  usePageEffects(caseStudyOpen)
+  usePageEffects()
 
   useEffect(() => {
     document.documentElement.style.colorScheme = theme
     try { localStorage.setItem('shamika-theme', theme) } catch { /* Private browsing. */ }
   }, [theme])
-
-  useEffect(() => {
-    const syncCaseRoute = () => {
-      const showingCase = window.location.hash === '#/projects/nira-agent'
-      setCaseStudyOpen(showingCase)
-      setMenuOpen(false)
-      if (showingCase) window.scrollTo(0, 0)
-      else if (window.location.hash.startsWith('#')) {
-        const id = window.location.hash.slice(1)
-        requestAnimationFrame(() => requestAnimationFrame(() => {
-          document.getElementById(id)?.scrollIntoView({ behavior: 'auto' })
-        }))
-      }
-    }
-    window.addEventListener('hashchange', syncCaseRoute)
-    return () => window.removeEventListener('hashchange', syncCaseRoute)
-  }, [])
-
-  useEffect(() => { if (caseStudyOpen) window.scrollTo(0, 0) }, [caseStudyOpen])
 
   const go = () => setMenuOpen(false)
   return (
@@ -201,7 +180,6 @@ function App() {
         <div className="nav-actions"><button className="theme-toggle" type="button" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} aria-label={theme === 'dark' ? 'Switch to Halo light mode' : 'Switch to Eclipse dark mode'}><Icon name={theme === 'dark' ? 'moon' : 'sun'} size={17} /><span>{theme === 'dark' ? 'ECLIPSE' : 'HALO'}</span></button><button className="menu-toggle" type="button" aria-expanded={menuOpen} aria-controls="site-nav" onClick={() => setMenuOpen((open) => !open)}><Icon name={menuOpen ? 'close' : 'menu'} size={20} /><span>{menuOpen ? 'CLOSE' : 'MENU'}</span></button></div>
       </header>
 
-      {caseStudyOpen ? <NiraCaseStudy /> : <>
       <main>
         <section className="stage stage-hero" id="home" aria-labelledby="hero-title"><Scene scene="hero" theme={theme} priority />
           <div className="stage-shell stage-shell-right"><div className="hero-copy">
@@ -251,7 +229,7 @@ function App() {
               <div className="focus-inner" key={selectedProject.id}>
                 <h3>{selectedProject.lead}</h3>
                 <p>{selectedProject.summary}</p>
-                <div className="focus-bottom"><div className="focus-tags">{selectedProject.technologies.slice(0, 4).map((tech) => <span key={tech}>{tech}</span>)}</div><button className="focus-detail" type="button" onClick={() => { if (selectedProject.id === 'nira-agent') window.location.hash = '#/projects/nira-agent'; else setActiveProject(selectedProject) }}>READ CASE STUDY <Icon name="arrow-up-right" size={16}/></button></div>
+                <div className="focus-bottom"><div className="focus-tags">{selectedProject.technologies.slice(0, 4).map((tech) => <span key={tech}>{tech}</span>)}</div><button className="focus-detail" type="button" onClick={() => setActiveProject(selectedProject)}>READ CASE STUDY <Icon name="arrow-up-right" size={16}/></button></div>
               </div>
             </div>
             <div className="project-linkline" data-reveal><span>SELECT A PROJECT TO EXPLORE</span><a href={LINKS.github} target="_blank" rel="noreferrer"><Icon name="github" size={17} /> GITHUB <Arrow /></a></div>
@@ -301,7 +279,6 @@ function App() {
         </div>
         <div className="footer-accent" aria-hidden="true" />
       </footer>
-      </>}
       <ProjectDialog project={activeProject} onClose={closeProject} />
       <PortfolioAssistant />
     </div>

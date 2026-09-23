@@ -1,0 +1,9 @@
+/* Model replies are text-first, but occasional markdown must not appear as raw ** markers. */
+.assistant-message-text{overflow-wrap:anywhere;min-width:0}
+.assistant-message-content .assistant-message-text p{margin:0 0 9px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13.5px;line-height:1.6;letter-spacing:normal;color:var(--ink)}
+.assistant-message-content .assistant-message-text p:last-child{margin-bottom:0}
+.assistant-message-content .assistant-message-text ul{margin:0 0 9px;padding-left:17px;color:var(--ink);font-size:13.5px;line-height:1.6}
+.assistant-message-content .assistant-message-text li{margin:0 0 6px;overflow-wrap:anywhere}
+.assistant-message-content .assistant-message-text ul:last-child{margin-bottom:0}
+.assistant-message-content .assistant-message-text strong{font-weight:750}
+.assistant-message-content .assistant-message-text em{font-style:italic}
