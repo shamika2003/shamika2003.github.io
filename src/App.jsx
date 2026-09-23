@@ -184,7 +184,7 @@ function App() {
           <div className="stage-shell stage-shell-right"><div className="hero-copy">
             <p className="section-id hero-id" data-reveal><span className="signal-dot" /> OPEN TO IT & SOFTWARE OPPORTUNITIES <i>01 / 04</i></p>
             <p className="hero-subtitle" data-reveal>IT OFFICER · SOFTWARE ENGINEERING UNDERGRADUATE</p>
-            <h1 id="hero-title" data-reveal>Engineering<br />what <em>matters.</em></h1>
+            <h1 id="hero-title" data-reveal>Engineering hey<br />what <em>matters.</em></h1>
             <p className="hero-description" data-reveal>I'm Shamika Achinthya. I build software, solve systems problems, and turn repetitive workflows into useful tools.</p>
             <div className="hero-actions" data-reveal><a className="button button-solid" href="#work">EXPLORE PROJECTS <Arrow /></a><a className="button button-line" href="#about">DISCOVER MORE <Arrow down /></a></div>
             <div className="hero-capabilities" data-reveal><span>JAVA / C# / PYTHON</span><span>IT OPERATIONS / AUTOMATION</span></div>
