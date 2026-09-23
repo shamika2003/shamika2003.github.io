@@ -1,25 +1,32 @@
-NIRA — WEBSITE IDENTITY / SYSTEM PROMPT REPLACEMENT
+NIRA by ELVARA — website identity + suggested-question fix
 
-Only the Worker prompt changes. React UI, greeting, Groq model, API key,
-rate limits, Wrangler config, and other Worker code are preserved.
+WHAT CHANGED
+- NIRA is the same character as Shamika's desktop-agent project, currently speaking through the website, not a separate person. This does not imply shared runtime, live memory or desktop permissions.
+- Introductory replies avoid repeating 'text-only web guide' or a capabilities disclaimer.
+- Suggested question buttons appear only for a fresh, empty conversation. They vanish on the first keystroke OR when a suggestion/message is sent; a new conversation restores them.
+- No voice, keys, Wrangler configuration or other portfolio files included.
 
-1. Extract ZIP into the ROOT of your portfolio repository, NOT inside worker.
-   On the home PC, the root was:
-   C:\Users\user\Documents\MULTI-LANG-PROJECT\Shamika-Portfolio
+INSTALL: From ANY PowerShell directory, with the ZIP in Downloads:
+$repo = 'C:\Users\user\Documents\MULTI-LANG-PROJECT\Shamika-Portfolio'
+$zip = Get-ChildItem "$HOME\Downloads" -Filter 'NIRA_Web_Portfolio_Refinement*.zip' | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+if (-not $zip) { throw 'Download the ZIP first.' }
+Expand-Archive -LiteralPath $zip.FullName -DestinationPath $repo -Force
 
-2. In PowerShell:
-   Set-Location 'C:\Users\user\Documents\MULTI-LANG-PROJECT\Shamika-Portfolio\worker'
-   node --test test\worker.test.mjs test\nira-website-identity.test.mjs
-   npx.cmd --yes wrangler@latest deploy
+TEST:
+Set-Location "$repo\worker"
+node --test test/worker.test.mjs test/nira-website-identity.test.mjs
 
-3. Refresh https://shamika2003.github.io/ and click NIRA's
-   "new conversation" icon (the circular arrows) so stale chat history
-   does not contaminate her new identity. A new public GitHub Pages build
-   is NOT required for this Worker-only edit.
+DEPLOY THE BACKEND PROMPT FROM THE WORKER FOLDER:
+npx.cmd --yes wrangler@latest deploy
 
-DO NOT enter the Groq key in the command and DO NOT upload .dev.vars.
-Existing GROQ_API_KEY secret is preserved by this Worker code deploy.
+COMMIT + PUSH FRONTEND CHANGE FROM REPO ROOT:
+Set-Location $repo
+npm.cmd run lint
+npm.cmd run build
+git add src/PortfolioAssistant.jsx worker/src/knowledge.mjs worker/test/nira-website-identity.test.mjs
+git commit -m "Refine NIRA web identity and hide starter prompts during chat"
+git push origin main
 
-NOTE: Static prompt tests verify instructions and exports, not that every
-LLM response is guaranteed. Check 'who are you?', 'tell me something',
-'can you control my PC?', and 'what is Nira Agent?' on the live website.
+IMPORTANT: GitHub Pages needs the push to show the frontend change. Wrangler deploy applies the prompt to the live backend. GitHub Actions should use the existing VITE_PORTFOLIO_API_URL repository variable. Never commit worker/.dev.vars or keys.
+
+After deploying, refresh the site (Ctrl+F5) and press NIRA's New Chat button to clear earlier misleading assistant replies.
