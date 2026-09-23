@@ -1,29 +1,25 @@
-NIRA BY ELVARA — CHARACTER PATCH (TEXT ONLY)
+NIRA — WEBSITE IDENTITY / SYSTEM PROMPT REPLACEMENT
 
-Fixes the misleading desktop-orb self-description and replaces the stiff welcome
-message with a more natural, playful NIRA opening. Keeps your live Groq model,
-backend code, API key, backgrounds and portfolio layout unchanged.
+Only the Worker prompt changes. React UI, greeting, Groq model, API key,
+rate limits, Wrangler config, and other Worker code are preserved.
 
-FILES (paths relative to your portfolio repo):
-  src/PortfolioAssistant.jsx
-  worker/src/knowledge.mjs
+1. Extract ZIP into the ROOT of your portfolio repository, NOT inside worker.
+   On the home PC, the root was:
+   C:\Users\user\Documents\MULTI-LANG-PROJECT\Shamika-Portfolio
 
-IMPORTANT: Extract this ZIP into the *repository ROOT*, not into worker/,
-not into E:\New folder\Multi-lang-project itself.
+2. In PowerShell:
+   Set-Location 'C:\Users\user\Documents\MULTI-LANG-PROJECT\Shamika-Portfolio\worker'
+   node --test test\worker.test.mjs test\nira-website-identity.test.mjs
+   npx.cmd --yes wrangler@latest deploy
 
-PowerShell (you can paste from any folder):
-  $repo = 'E:\New folder\Multi-lang-project\shamika2003.github.io'
-  $zip = Get-ChildItem "$HOME\Downloads" -Filter 'NIRA_Personality_Refinement*.zip' |
-      Sort-Object LastWriteTime -Descending | Select-Object -First 1
-  if (-not $zip) { throw 'Download NIRA_Personality_Refinement.zip first.' }
-  Expand-Archive -LiteralPath $zip.FullName -DestinationPath $repo -Force
+3. Refresh https://shamika2003.github.io/ and click NIRA's
+   "new conversation" icon (the circular arrows) so stale chat history
+   does not contaminate her new identity. A new public GitHub Pages build
+   is NOT required for this Worker-only edit.
 
-To load the edited system prompt, restart Wrangler in worker/ (Ctrl+C then
-npx.cmd --yes wrangler@latest dev --port 8787). Refresh the website, click the
-new-conversation icon in the chat header; previous conversations are not rewritten.
+DO NOT enter the Groq key in the command and DO NOT upload .dev.vars.
+Existing GROQ_API_KEY secret is preserved by this Worker code deploy.
 
-Then in the repo root:
-  npm.cmd run lint
-  npm.cmd run build
-
-Never put your GROQ_API_KEY in this ZIP or commit worker/.dev.vars.
+NOTE: Static prompt tests verify instructions and exports, not that every
+LLM response is guaranteed. Check 'who are you?', 'tell me something',
+'can you control my PC?', and 'what is Nira Agent?' on the live website.
